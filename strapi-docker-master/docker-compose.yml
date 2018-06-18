@@ -12,8 +12,8 @@ services:
       - DATABASE_USERNAME=
       - DATABASE_PASSWORD=
       - HOST=localhost
-    ports:
-      - 1337:1337
+    expose:
+      - "1337"
     volumes:
       - ./strapi-app:/usr/src/api/strapi-app
       - /usr/src/api/strapi-app/node_modules
@@ -41,6 +41,23 @@ services:
     restart: always
 ## https://www.sohamkamani.com/blog/2016/06/30/docker-mongo-replica-set/
 ## --slaveok true  --replSet strapi
+
+  nginx:
+    build: ./nginx/
+    depends_on:
+      - api
+    image: nginx:alpine
+    restart: always
+    ports:
+      - 1337:1337
+      - 27017:27017
+      - 80:80
+    networks:
+      strapinet:
+        ipv6_address: 2001:a:a:b::22
+      nginxnet:
+        ipv6_address: 2001:30::30
+
 networks:
   strapinet:
     driver: "bridge"
@@ -50,3 +67,11 @@ networks:
       config:
         # - subnet: 192.168.30.0/24
         - subnet: 2001:a:a:b::/64
+  nginxnet:
+    driver: "bridge"
+    enable_ipv6: true
+    ipam:
+      driver: default
+      config:
+        # - subnet: 192.168.30.0/24
+        - subnet: 2001:30::/64
